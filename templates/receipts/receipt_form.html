@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Зарегистрировать чек — Чек на удачу{% endblock %}
+{% block content %}
+<section class="registration-page">
+  <section class="form-card" aria-labelledby="form-title">
+    <a class="card-close" href="{% url 'receipt_list' %}" aria-label="Закрыть форму">×</a>
+    <div class="form-heading">
+      <h1 id="form-title">Регистрация чека</h1>
+      <p>Введите необходимые данные с чека</p>
+    </div>
+    <div class="campaign-period"><span>Период акции</span><strong>{{ campaign_start_date|date:"d.m.Y" }} — {{ campaign_end_date|date:"d.m.Y" }}</strong></div>
+    <form id="receipt-form" method="post" novalidate data-endpoint="{% url 'receipt_create' %}" data-campaign-start="{{ campaign_start_date|date:'Y-m-d' }}" data-campaign-end="{{ campaign_end_date|date:'Y-m-d' }}" data-account-url="{% url 'receipt_list' %}">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="field-group {% if field.errors %}has-error{% endif %}">
+          <label for="{{ field.id_for_label }}">{% if field.name == "fd" %}Номер чека (ФД){% elif field.name == "purchase_at" %}Дата покупки{% elif field.name == "amount" %}Сумма чека{% else %}{{ field.label }}{% endif %}<span class="required-star">*</span></label>
+          {% if field.name == "amount" %}<div class="amount-wrap">{{ field }}<span class="currency">₽</span></div>{% else %}{{ field }}{% endif %}
+          {% if field.name == "purchase_at" %}<span class="field-hint">Укажите дату и время покупки</span>{% endif %}
+          {% if field.name == "amount" %}<span class="field-hint">Минимальная стоимость чека — 1 000 ₽</span>{% endif %}
+          <span class="field-error" id="error-{{ field.name }}"{% if not field.errors %} hidden{% endif %}>{% for error in field.errors %}{{ error }}{% endfor %}</span>
+        </div>
+      {% endfor %}
+      <details class="qr-details">
+        <summary>Заполнить по строке QR-кода</summary>
+        <div class="qr-controls"><input id="qr-string" type="text" placeholder="t=20260101T1200&s=...&fn=..." autocomplete="off"><button id="parse-qr" class="qr-button" type="button">Заполнить</button></div>
+        <span class="qr-feedback" id="qr-feedback" aria-live="polite"></span>
+      </details>
+      {% if form.non_field_errors %}<div class="field-error form-error" id="error-general">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% else %}<div class="field-error form-error" id="error-general" hidden></div>{% endif %}
+      <div id="form-response" class="form-response" role="status" aria-live="polite" hidden></div>
+      <button class="primary-button" type="submit"><span>Зарегистрировать чек</span></button>
+    </form>
+  </section>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'receipts/receipt-form.js' %}" defer></script>{% endblock %}

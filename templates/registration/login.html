@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Войти — Чек на удачу{% endblock %}
+{% block content %}
+<section class="auth-shell"><div class="auth-art"><span class="auth-art-mark">✳</span><div class="eyebrow">ТВОЯ УДАЧА УЖЕ РЯДОМ</div><h1>Чекни.<br><span class="accent-text">И выиграй.</span></h1><p>Войди в аккаунт, чтобы участвовать в акции и следить за своими чеками.</p></div>
+<div class="auth-card"><div class="section-kicker">С РАДОСТЬЮ ТЕБЯ ЖДЁМ</div><h2>Войти в аккаунт</h2><form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="field-error form-error">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="field-group"><label for="id_username">Имя пользователя</label><input class="form-control" type="text" name="username" id="id_username" autocomplete="username" required autofocus>{% for error in form.username.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+  <div class="field-group"><label for="id_password">Пароль</label><input class="form-control" type="password" name="password" id="id_password" autocomplete="current-password" required>{% for error in form.password.errors %}<span class="field-error">{{ error }}</span>{% endfor %}</div>
+  <input type="hidden" name="next" value="{{ next }}"><button class="primary-button" type="submit"><span>Войти</span><span class="button-arrow">↗</span></button></form><p class="auth-switch">Ещё нет аккаунта? <a href="{% url 'signup' %}">Зарегистрироваться</a></p></div></section>
+{% endblock %}

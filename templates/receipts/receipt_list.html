@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Мои чеки — Чек на удачу{% endblock %}
+{% block content %}
+<section class="dashboard-page">
+  <section class="dashboard-panel" aria-labelledby="history-title">
+    <header class="panel-heading"><h1 id="history-title">История чеков</h1><div class="receipt-count">Чеков внесено: <strong>{{ page_obj.paginator.count }}</strong> шт.</div></header>
+    {% if receipts %}
+      <div class="receipt-table-wrap" id="receipt-list">
+        <table class="receipt-table">
+          <thead><tr><th scope="col">Дата покупки</th><th scope="col">Статус</th><th scope="col">Сумма чека</th><th scope="col">Дата регистрации</th><th scope="col">Информация</th></tr></thead>
+          <tbody>
+            {% for receipt in receipts %}
+              <tr data-receipt-id="{{ receipt.pk }}">
+                <td class="col-purchase" data-label="Дата покупки"><div class="purchase-cell"><span class="receipt-preview" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span><strong>{{ receipt.purchase_at|date:"d.m.Y" }}</strong><small>{{ receipt.purchase_at|date:"H:i" }}</small></span></div></td>
+                <td class="col-status" data-label="Статус"><span class="status-pill status-{{ receipt.status }}" data-status>{{ receipt.get_status_display }}</span></td>
+                <td class="col-amount" data-label="Сумма чека"><strong>{{ receipt.amount|floatformat:"-2g" }} ₽</strong></td>
+                <td class="col-registered" data-label="Дата регистрации"><span>{{ receipt.registered_at|date:"d.m.Y" }}</span><small>{{ receipt.registered_at|date:"H:i" }}</small></td>
+                <td class="col-info" data-label="Информация"><span data-reason{% if not receipt.rejection_reason %} hidden{% endif %}>{{ receipt.rejection_reason }}</span>{% if not receipt.rejection_reason %}<span class="receipt-info-muted" data-default-info>{% if receipt.status == "pending" %}Чек на проверке{% elif receipt.status == "accepted" %}Чек принят{% else %}Причина не указана{% endif %}</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <footer class="panel-footer">
+        {% if page_obj.paginator.num_pages > 1 %}
+          <nav class="pagination" aria-label="Страницы чеков">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" aria-label="Предыдущая страница">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+            {% for number in page_obj.paginator.page_range %}{% if number == page_obj.number %}<span class="current">{{ number }}</span>{% else %}<a href="?page={{ number }}">{{ number }}</a>{% endif %}{% endfor %}
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" aria-label="Следующая страница">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+          </nav>
+        {% else %}<span class="table-note">Здесь отображаются все зарегистрированные чеки</span>{% endif %}
+        <a href="{% url 'receipt_create' %}" class="primary-button add-receipt"><span aria-hidden="true">＋</span> Зарегистрировать чек</a>
+      </footer>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-illustration" aria-hidden="true"><span class="question question-one">?</span><span class="question question-two">?</span><svg viewBox="0 0 120 126" role="presentation"><path d="M28 13h61v95l-10-7-10 7-10-7-10 7-10-7-11 7V13Z" fill="#fff" stroke="#b8b4ed" stroke-width="3"/><path d="M42 34h34M42 48h34M42 62h26M42 76h31M42 90h17" stroke="#c8c5ee" stroke-width="3" stroke-linecap="round"/><circle cx="88" cy="91" r="16" fill="#eeeaff"/><text x="82" y="98" fill="#7065d8" font-size="21" font-family="Arial">₽</text></svg></div>
+        <h2>Здесь будет история ваших чеков</h2>
+        <p>Вы не добавили ещё ни одного чека</p>
+        <a href="{% url 'receipt_create' %}" class="primary-button add-receipt"><span aria-hidden="true">▧</span> Зарегистрировать чек</a>
+      </div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'receipts/receipt-status.js' %}" defer></script>{% endblock %}

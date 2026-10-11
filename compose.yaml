@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-lucky_receipt}
+      POSTGRES_USER: ${POSTGRES_USER:-lucky_receipt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lucky_receipt} -d ${POSTGRES_DB:-lucky_receipt}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-change-this-secret}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      CAMPAIGN_START_DATE: ${CAMPAIGN_START_DATE:-2026-01-01}
+      CAMPAIGN_END_DATE: ${CAMPAIGN_END_DATE:-2026-12-31}
+      CAMPAIGN_TIME_ZONE: ${CAMPAIGN_TIME_ZONE:-Europe/Moscow}
+      POSTGRES_DB: ${POSTGRES_DB:-lucky_receipt}
+      POSTGRES_USER: ${POSTGRES_USER:-lucky_receipt}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
